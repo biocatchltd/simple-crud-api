@@ -1,3 +1,4 @@
+import { FastifyReply } from "fastify";
 import { fastify } from "../fwInstances";
 
 type deleteInputArgs = {
@@ -21,14 +22,15 @@ const deleteOutput = {
 export const deleteRoute = {
   method: "DELETE",
   url: "/delete",
-  handler: async (input: deleteInputArgs) => {
+  handler: async (req: any, reply: FastifyReply) => {
     const client = await fastify.pg.connect();
+    const { body: input } = req;
     try {
       const { rows } = await client.query(
-        "UPDATE sessions SET DELETED = True WHERE sessionId = $1 returning SESSION_ID",
+        "UPDATE sessions SET DELETED = True WHERE SESSION_ID = $1 returning SESSION_ID",
         [input.sessionId]
       );
-      return rows;
+      reply.send({ sessionId: rows[0].session_id });
     } finally {
       client.release();
     }

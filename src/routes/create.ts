@@ -1,3 +1,4 @@
+import { FastifyReply } from "fastify";
 import { fastify } from "../fwInstances";
 
 type createInputArgs = {
@@ -33,7 +34,7 @@ const createOutput = {
 export const createRoute = {
   method: "POST",
   url: "/create",
-  handler: async (req: any) => {
+  handler: async (req: any, reply: FastifyReply) => {
     const client = await fastify.pg.connect();
     const { body: input } = req;
     console.log({ input });
@@ -58,7 +59,8 @@ export const createRoute = {
           input.score ?? null,
         ]
       );
-      return rows;
+      console.log(rows[0]);
+      reply.send({ sessionId: rows[0].session_id });
     } finally {
       client.release();
     }

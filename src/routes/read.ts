@@ -13,6 +13,8 @@ const readOutput = {
       cursorHops: { type: "number" },
       ip: { type: "string" },
       passwordPasted: { type: "boolean" },
+      score: { type: "number" },
+      deleted: { type: "boolean" },
     },
   },
 };
@@ -24,7 +26,7 @@ export const readRoute = {
     const client = await fastify.pg.connect();
     try {
       const { rows } = await client.query("SELECT * FROM sessions");
-      const parsedRows = rows.map((row) => ({
+      const parsedRows = rows.map((row: any) => ({
         sessionId: row.session_id,
         timestamp: row.timestamp,
         customerId: row.customer_id,
@@ -32,8 +34,10 @@ export const readRoute = {
         cursorHops: row.cursor_hops,
         ip: row.ip,
         passwordPasted: row.password_pasted,
+        score: row.score,
+        deleted: row.deleted,
       }));
-      reply.send(rows);
+      reply.send(parsedRows);
     } finally {
       client.release();
     }
