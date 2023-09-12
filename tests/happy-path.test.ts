@@ -50,7 +50,37 @@ describe("Happy path", async () => {
   test("should update a row", async () => {
     const data = JSON.parse((await read("/read")).body);
     assert.equal(data.length, 1);
-    assert.equal(data[0].score, null);
+    assert.equal(data[0].score, 0);
 
-    
+    await server.inject({
+      method: "PUT",
+      url: "/update",
+      payload: {
+        sessionId: data[0].sessionId,
+        score: 1,
+      },
+    });
+
+    const updatedData = JSON.parse((await read("/read")).body);
+    assert.equal(updatedData.length, 1);
+    assert.equal(updatedData[0].score, 1);
+  });
+
+  test("should soft-delete a row", async () => {
+    const data = JSON.parse((await read("/read")).body);
+    assert.equal(data.length, 1);
+    assert.equal(data[0].deleted, false);
+
+    await server.inject({
+      method: "DELETE",
+      url: "/delete",
+      payload: {
+        sessionId: data[0].sessionId,
+      },
+    });
+
+    const updatedData = JSON.parse((await read("/read")).body);
+    assert.equal(updatedData.length, 1); // it's a soft delete
+    assert.equal(updatedData[0].deleted, true);
+  });
 });
